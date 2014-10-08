@@ -65,7 +65,8 @@ DATABASES = {
 }
 
 TEMPLATE_DIRS = (
-    '/Users/anbang/Documents/development/django/liveStreaming/liveStreaming/template',
+    os.path.join(BASE_DIR, 'liveStreaming/template/'),
+    #'/Users/anbang/Documents/development/django/liveStreaming/liveStreaming/template',
 )
 
 # Internationalization
@@ -85,7 +86,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/Users/anbang/Documents/development/django/liveStreaming/liveStreaming/static/'
+STATIC_URL = os.path.join(BASE_DIR, 'liveStreaming/static/')
+#STATIC_URL = '/Users/anbang/Documents/development/django/liveStreaming/liveStreaming/static/'
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 STATICFILES_DIRS = (

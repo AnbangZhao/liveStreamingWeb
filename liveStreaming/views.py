@@ -21,12 +21,12 @@ def open(request):
     stream = queryDict.__getitem__(CONFIG['stream'])
     ip = queryDict.__getitem__(CONFIG['clientIP'])
     rtspSource = 'rtsp://' + ip + ':1234'
-    rtmpEnd = 'rtmp://54.86.128.158/liveStreaming' + '/' + stream 
+    rtmpEnd = 'rtmp://128.2.213.103/liveStreaming' + '/' + stream 
 
     streamObject = FfmpegStream(fip = ip, fstream = stream, fapp = appname)
     streamObject.save()
     subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
-        rtspSource, '-vcodec', 'libx264', '-acodec', 'aac', '-f', 
+        rtspSource, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
         'flv', rtmpEnd], shell=False)
 
     tmpObj = FfmpegStream.objects.filter(fip = ip, fstream = stream, fapp = appname)
