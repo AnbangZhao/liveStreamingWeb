@@ -4553,7 +4553,7 @@ a.list-group-item.active > .badge,
 .jumbotron {
   margin-top: 40px;
   margin-bottom: 40px;
-  background: url("/Users/anbang/Documents/development/django/liveStreaming/liveStreaming/static/pictures/glass.jpg")  center  no-repeat;
+  background: url("../pictures/glass.jpg")  center  no-repeat;
   background-size: cover;
   color: #FFFFFF;
 }
