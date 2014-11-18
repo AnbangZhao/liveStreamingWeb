@@ -5,4 +5,5 @@ CONFIG = {
     'appname' : 'appname',
     'stream' : 'stream',
     'clientIP' : 'clientIP',
+    'streamCapacity' : 'streamCapacity'
 }

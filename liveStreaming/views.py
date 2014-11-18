@@ -20,8 +20,9 @@ def open(request):
     appname = queryDict.__getitem__(CONFIG['appname'])
     stream = queryDict.__getitem__(CONFIG['stream'])
     ip = queryDict.__getitem__(CONFIG['clientIP'])
+    capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
     rtspSource = 'rtsp://' + ip + ':1234'
-    rtmpEnd = 'rtmp://128.2.213.103/liveStreaming' + '/' + stream 
+    rtmpEnd = 'rtmp://128.2.213.128/liveStreaming' + '/' + stream 
 
     streamObject = FfmpegStream(fip = ip, fstream = stream, fapp = appname)
     streamObject.save()
