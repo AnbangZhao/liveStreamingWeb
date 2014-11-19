@@ -10,5 +10,7 @@ urlpatterns = patterns('',
     #home page
     url(r'^$', 'liveStreaming.views.home'),
     #open streaming connection ffmpeg
-    url(r'^openstream$', 'liveStreaming.views.open')
+    url(r'^openstream$', 'liveStreaming.views.open'),
+    #exit streaming
+    url(r'^exitstream$', 'liveStreaming.views.exit')
 )
