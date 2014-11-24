@@ -12,5 +12,7 @@ urlpatterns = patterns('',
     #open streaming connection ffmpeg
     url(r'^openstream$', 'liveStreaming.views.open'),
     #exit streaming
-    url(r'^exitstream$', 'liveStreaming.views.exit')
+    url(r'^exitstream$', 'liveStreaming.views.exit'),
+    #degrade all stream resolutions
+    url(r'^degrade$', 'liveStreaming.views.degrade')
 )

@@ -3,12 +3,24 @@ from django.shortcuts import render
 from config import CONFIG
 from django.views.decorators.csrf import csrf_exempt
 from streams.models import FfmpegStream
+from streams.models import videoQuality
 import subprocess
 import urllib
 import urllib2
 import os
 import signal
 import socket
+import random
+
+qualityTuple = ('1920x1080', '1280x720', '640x480')
+
+def startup():
+    FfmpegStream.objects.all().delete()
+    videoQuality.objects.all().delete()
+    array = FfmpegStream.objects.all()
+    print len(array)
+
+startup()
 
 def home(request):
     queryDict = request.GET
@@ -18,12 +30,12 @@ def home(request):
     #return HttpResponse(socket.gethostbyname(socket.gethostname()))
     treename = getTreeName(appname, streamname)
     streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
-    #if len(streamInfoArray) >= 1:
-     #   return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+    if len(streamInfoArray) >= 1:
+        return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
-    con = joinTree(appname, streamname)
-    return con
-    #return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+    ip = joinTree(appname, streamname)
+    openStream(appname, streamname, ip)
+    return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
 # open ffmpeg connection
 # only allow get request
@@ -38,20 +50,7 @@ def open(request):
     stream = queryDict.__getitem__(CONFIG['stream'])
     ip = queryDict.__getitem__(CONFIG['clientIP'])
     capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
-    rtspSource = 'rtsp://' + ip + ':1234'
-    rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + stream 
-
-    treeName = getTreeName(appname, stream)
-    #proc = subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
-      #  rtspSource, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
-        #'flv', rtmpEnd], shell=False)
-
-    #pid = proc.pid
-    pid = 10086
-    userCount = 1
-
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount)
-    streamObject.save()
+    openStream(appname, streamname, ip)
 
     createTree(appname, stream, capacity)
 
@@ -70,8 +69,9 @@ def exit(request):
     tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
     userCount = int(tmpObj[0].fuserCount)
     pid = int(tmpObj[0].fpid)
+    rtspSource = tmpObj[0].fRtspSource
     userCount -= 1
-    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount)
+    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     newObj.save()
     if userCount <=0 :
         exitTree(appname, streamName)
@@ -90,11 +90,52 @@ def stop(request):
     tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
     userCount = int(tmpObj[0].fuserCount)
     pid = int(tmpObj[0].fpid)
+    rtspSource = tmpObj[0].fRtspSource
     userCount -= 1
-    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount)
+    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     newObj.save()
     exitTree(appname, streamName)
     os.killpg(pid, signal.SIGTERM)
+
+def degrade(request):
+    currQuality = getCurrentQuality()
+    index = qualityTuple.index(currQuality)
+    if index == len(qualityTuple) - 1:
+        return HttpResponse(currQuality)
+
+    print index
+    index += 1
+    newQuality = qualityTuple[index]
+    print 'newQuality', newQuality
+    newObj = videoQuality(sVideo = 'video', sQuality = newQuality)
+    newObj.save()
+    for streamObj in FfmpegStream.objects.all():
+        restart(srteamObj, newQuality)
+    return HttpResponse(newQuality)
+
+def restart(streamObj, newQuality):
+    treeName = streamObj.ftreename
+    pid = streamObj.fpid
+    rtspSource = streamObj.fRtspSource
+    userCount = streamObj.fuserCount
+    os.killpg(pid, signal.SIGTERM)
+            #proc = subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
+      #  rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+        #'flv', rtmpEnd], shell=False)
+    pid = 10086 #pid = proc.pid
+    newObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
+    newObject.save()
+
+
+def getCurrentQuality():
+    objArray = videoQuality.objects.filter(sVideo = 'video')
+    if len(objArray) == 0:
+        print 'not none'
+        quality = qualityTuple[0]
+        newObj = videoQuality(sVideo = 'video', sQuality = quality)
+        newObj.save()
+        return quality
+    return objArray[0].sQuality
 
 def createTree(appname, streamName, streamCapacity):
     treeName = getTreeName(appname, streamName)
@@ -115,6 +156,19 @@ def exitTree(appName, streamName):
     content = rsp.read()
     print "content is", content
 
+def openStream(appName, streamName, ip):
+    treeName = getTreeName(appname, stream)
+    rtspSource = 'rtsp://' + ip + ':1234'
+    rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + stream 
+            #proc = subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
+      #  rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+        #'flv', rtmpEnd], shell=False)
+    pid = 10086  #pid = proc.pid
+    userCount = 1
+
+    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
+    streamObject.save()
+
 def getTreeName(appname, streamName):
     treename = appname + "/" + streamName
     return treename
@@ -128,3 +182,15 @@ def joinTree(appname, streamname):
     rsp = urllib2.urlopen(req)
     content = rsp.read()
     return content
+
+def getConnNum(appName, streamName):
+    queryUrl = "http://127.0.0.1/stat"
+    req = urllib2.Request(createTreeUrl, data)
+    rsp = urllib2.urlopen(req)
+    content = rsp.read()
+    randNum = random.randrange(1, 10000)
+    fileName = 'tmp.dat' + str(randNum)
+    dataFile = open('tmp.dat', 'w')
+    dataFile.write(content)
+    dataFile.close()
+    getNumFromXml(appName, streamName, fileName)

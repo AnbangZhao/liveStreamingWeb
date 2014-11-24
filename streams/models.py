@@ -6,5 +6,10 @@ class publisher(models.Model) :
 
 class FfmpegStream(models.Model) :
     ftreename = models.CharField(max_length = 50, primary_key=True)
+    fRtspSource = models.CharField(max_length = 50)
     fpid = models.CharField(max_length = 10)
     fuserCount = models.CharField(max_length = 10)
+
+class videoQuality(models.Model):
+    sVideo = models.CharField(max_length = 30, primary_key=True)
+    sQuality = models.CharField(max_length = 10)
