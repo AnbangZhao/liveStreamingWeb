@@ -11,6 +11,7 @@ import os
 import signal
 import socket
 import random
+from time import sleep
 
 qualityTuple = ('1920x1080', '1280x720', '640x480')
 
@@ -24,17 +25,21 @@ startup()
 
 def home(request):
     queryDict = request.GET
-    myip = socket.gethostbyname(socket.gethostname())
+    #myip = socket.gethostbyname(socket.gethostname())
+    myip = '128.2.213.111'
+    print myip
     appname = queryDict.__getitem__(CONFIG['appname'])
     streamname = queryDict.__getitem__(CONFIG['stream'])
     #return HttpResponse(socket.gethostbyname(socket.gethostname()))
     treename = getTreeName(appname, streamname)
     streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
     if len(streamInfoArray) >= 1:
+        print "len is bigger than one"	
         return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
-    ip = joinTree(appname, streamname)
-    openStream(appname, streamname, ip)
+    #ip = joinTree(appname, streamname)
+    ip = '10.2.11.6'
+    openStream(appname, streamname, ip, False)
     return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
 # open ffmpeg connection
@@ -50,7 +55,7 @@ def open(request):
     stream = queryDict.__getitem__(CONFIG['stream'])
     ip = queryDict.__getitem__(CONFIG['clientIP'])
     capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
-    openStream(appname, streamname, ip)
+    openStream(appname, streamname, ip, True)
 
     createTree(appname, stream, capacity)
 
@@ -75,7 +80,7 @@ def exit(request):
     newObj.save()
     if userCount <=0 :
         exitTree(appname, streamName)
-        os.killpg(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGTERM)
     return HttpResponse(tmpObj[0].fpid)
 
 # only allow get request
@@ -95,7 +100,7 @@ def stop(request):
     newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     newObj.save()
     exitTree(appname, streamName)
-    os.killpg(pid, signal.SIGTERM)
+    os.kill(pid, signal.SIGTERM)
 
 def degrade(request):
     currQuality = getCurrentQuality()
@@ -110,7 +115,7 @@ def degrade(request):
     newObj = videoQuality(sVideo = 'video', sQuality = newQuality)
     newObj.save()
     for streamObj in FfmpegStream.objects.all():
-        restart(srteamObj, newQuality)
+        restart(streamObj, newQuality)
     return HttpResponse(newQuality)
 
 def restart(streamObj, newQuality):
@@ -118,11 +123,15 @@ def restart(streamObj, newQuality):
     pid = streamObj.fpid
     rtspSource = streamObj.fRtspSource
     userCount = streamObj.fuserCount
-    os.killpg(pid, signal.SIGTERM)
-            #proc = subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
-      #  rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
-        #'flv', rtmpEnd], shell=False)
-    pid = 10086 #pid = proc.pid
+    rtmpEnd = 'rtmp://127.0.0.1/' + treeName
+    print 'restart pid: ' + pid
+    print 'restart quality: ' + newQuality
+    os.kill(int(pid), signal.SIGTERM)
+    sleep(1)
+    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-i', 
+    rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+    'flv', rtmpEnd], shell=False)
+    pid = proc.pid
     newObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     newObject.save()
 
@@ -156,14 +165,24 @@ def exitTree(appName, streamName):
     content = rsp.read()
     print "content is", content
 
-def openStream(appName, streamName, ip):
-    treeName = getTreeName(appname, stream)
-    rtspSource = 'rtsp://' + ip + ':1234'
-    rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + stream 
-            #proc = subprocess.Popen(['/Users/anbang/Documents/development/django/liveStreaming/ffmpeg', '-i', 
-      #  rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
-        #'flv', rtmpEnd], shell=False)
-    pid = 10086  #pid = proc.pid
+def openStream(appName, streamName, ip, isRtsp):
+    treeName = getTreeName(appName, streamName)
+    protocol = 'rtmp://'
+    port = ''
+    srcName = '/liveStreaming' + '/' + streamName
+    if isRtsp == True:
+        protocol = 'rtsp'
+        port = ':1234'
+        srcName = ''
+    rtspSource = protocol + ip + port + srcName
+    rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + streamName 
+    currQuality = getCurrentQuality()
+    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-i', 
+    rtspSource, '-s', currQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+    'flv', rtmpEnd], shell=False)
+    #pid = 10086  
+    pid = proc.pid
+    print 'pid in openstream ' + str(pid)
     userCount = 1
 
     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
