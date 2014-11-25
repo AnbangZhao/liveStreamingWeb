@@ -13,7 +13,7 @@ import socket
 import random
 from time import sleep
 
-qualityTuple = ('1920x1080', '1280x720', '640x480')
+qualityTuple = ('1280x720', '640x480', '320x240')
 
 def startup():
     FfmpegStream.objects.all().delete()
