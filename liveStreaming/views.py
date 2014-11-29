@@ -13,7 +13,7 @@ import socket
 import random
 from time import sleep
 
-qualityTuple = ('1920x1080', '1280x720', '640x480')
+qualityTuple = ('640x480', '480x360','320x240')
 
 def startup():
     FfmpegStream.objects.all().delete()
@@ -26,7 +26,7 @@ startup()
 def home(request):
     queryDict = request.GET
     #myip = socket.gethostbyname(socket.gethostname())
-    myip = '128.2.213.111'
+    myip = '128.2.213.103'
     print myip
     appname = queryDict.__getitem__(CONFIG['appname'])
     streamname = queryDict.__getitem__(CONFIG['stream'])
@@ -38,7 +38,7 @@ def home(request):
         return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
     #ip = joinTree(appname, streamname)
-    ip = '10.2.11.6'
+    ip = '10.2.11.7'
     openStream(appname, streamname, ip, False)
     return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
@@ -127,11 +127,12 @@ def restart(streamObj, newQuality):
     print 'restart pid: ' + pid
     print 'restart quality: ' + newQuality
     os.kill(int(pid), signal.SIGTERM)
-    sleep(1)
-    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-i', 
-    rtspSource, '-s', newQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+    sleep(2)
+    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv','-i', 
+    rtspSource, '-s', newQuality, '-map', '0:0','-vcodec', 'libx264','-f',
     'flv', rtmpEnd], shell=False)
     pid = proc.pid
+    print "pid", pid
     newObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     newObject.save()
 
@@ -177,8 +178,8 @@ def openStream(appName, streamName, ip, isRtsp):
     rtspSource = protocol + ip + port + srcName
     rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + streamName 
     currQuality = getCurrentQuality()
-    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-i', 
-    rtspSource, '-s', currQuality, '-vcodec', 'libx264', '-strict', '-2', '-acodec', 'aac',  '-b:a', '32k','-f',
+    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv', '-re', '-i',
+    rtspSource, '-s', currQuality, '-vcodec', 'libx264', '-f',
     'flv', rtmpEnd], shell=False)
     #pid = 10086  
     pid = proc.pid
