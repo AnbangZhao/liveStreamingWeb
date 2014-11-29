@@ -1,4 +1,6 @@
 db.sqlite3
-*.pyc
-*.py~
-*.pyc~
+**/*.pyc
+**/*.py~
+**/*.pyc~
+**/.DS_Store
+ffmpeg
