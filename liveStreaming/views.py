@@ -17,11 +17,16 @@ from time import sleep
 
 qualityTuple = ('640x480', '480x360','320x240')
 CLOUDLET_DEFAULT_CAPACITY = 1000
+LOCALIP = ''
+PUBLICIP = ''
 
 def startup():
     FfmpegStream.objects.all().delete()
     videoQuality.objects.all().delete()
-    initNode(CLOUDLET_DEFAULT_CAPACITY)
+    ipList = getIp()
+    LOCALIP = ipList[0]
+    PUBLICIP = ipList[1]
+    initNode(CLOUDLET_DEFAULT_CAPACITY, LOCALIP)
     array = FfmpegStream.objects.all()
     print len(array)
 
