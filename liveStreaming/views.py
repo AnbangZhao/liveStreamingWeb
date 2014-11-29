@@ -11,36 +11,43 @@ import os
 import signal
 import socket
 import random
+from liveStreaming.manipulation import *
+from liveStreaming.httpService import sendReq
 from time import sleep
 
 qualityTuple = ('640x480', '480x360','320x240')
+CLOUDLET_DEFAULT_CAPACITY = 1000
 
 def startup():
     FfmpegStream.objects.all().delete()
     videoQuality.objects.all().delete()
+    initNode(CLOUDLET_DEFAULT_CAPACITY)
     array = FfmpegStream.objects.all()
     print len(array)
 
 startup()
 
 def home(request):
-    queryDict = request.GET
-    #myip = socket.gethostbyname(socket.gethostname())
-    myip = '128.2.213.103'
-    print myip
-    appname = queryDict.__getitem__(CONFIG['appname'])
-    streamname = queryDict.__getitem__(CONFIG['stream'])
-    #return HttpResponse(socket.gethostbyname(socket.gethostname()))
-    treename = getTreeName(appname, streamname)
-    streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
-    if len(streamInfoArray) >= 1:
-        print "len is bigger than one"	
-        return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+    return HttpResponse('hello world')
 
-    #ip = joinTree(appname, streamname)
-    ip = '10.2.11.7'
-    openStream(appname, streamname, ip, False)
-    return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+# def home(request):
+#     queryDict = request.GET
+#     #myip = socket.gethostbyname(socket.gethostname())
+#     myip = '128.2.213.103'
+#     print myip
+#     appname = queryDict.__getitem__(CONFIG['appname'])
+#     streamname = queryDict.__getitem__(CONFIG['stream'])
+#     #return HttpResponse(socket.gethostbyname(socket.gethostname()))
+#     treename = getTreeName(appname, streamname)
+#     streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
+#     if len(streamInfoArray) >= 1:
+#         print "len is bigger than one"	
+#         return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+
+#     #ip = joinTree(appname, streamname)
+#     ip = '10.2.11.7'
+#     openStream(appname, streamname, ip, False)
+#     return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
 
 # open ffmpeg connection
 # only allow get request
@@ -55,7 +62,7 @@ def open(request):
     stream = queryDict.__getitem__(CONFIG['stream'])
     ip = queryDict.__getitem__(CONFIG['clientIP'])
     capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
-    openStream(appname, streamname, ip, True)
+    #openStream(appname, streamname, ip, True)
 
     createTree(appname, stream, capacity)
 
@@ -146,16 +153,6 @@ def getCurrentQuality():
         newObj.save()
         return quality
     return objArray[0].sQuality
-
-def createTree(appname, streamName, streamCapacity):
-    treeName = getTreeName(appname, streamName)
-    createTreeUrl = "https://p2p-meta-server.appspot.com/createtree"
-    values = dict(treename=treeName, consume=streamCapacity)
-    data = urllib.urlencode(values)
-    req = urllib2.Request(createTreeUrl, data)
-    rsp = urllib2.urlopen(req)
-    content = rsp.read()
-    print "content is", content
 
 def exitTree(appName, streamName):
     treeName = getTreeName(appname, streamName)
