@@ -15,7 +15,7 @@ from liveStreaming.manipulation import *
 from liveStreaming.httpService import sendReq
 from time import sleep
 
-qualityTuple = ('640x480', '480x360','320x240')
+
 CLOUDLET_DEFAULT_CAPACITY = 1000
 LOCALIP = ''
 PUBLICIP = ''
@@ -24,11 +24,11 @@ def startup():
     FfmpegStream.objects.all().delete()
     videoQuality.objects.all().delete()
     ipList = getIp()
+    global LOCALIP
+    global PUBLICIP
     LOCALIP = ipList[0]
     PUBLICIP = ipList[1]
     initNode(CLOUDLET_DEFAULT_CAPACITY, LOCALIP)
-    array = FfmpegStream.objects.all()
-    print len(array)
 
 startup()
 
@@ -62,17 +62,17 @@ def open(request):
      #   return HttpResponse('GET not supported')
 
     queryDict = request.GET
-    username = queryDict.__getitem__(CONFIG['username'])
     appname = queryDict.__getitem__(CONFIG['appname'])
     stream = queryDict.__getitem__(CONFIG['stream'])
-    ip = queryDict.__getitem__(CONFIG['clientIP'])
+    clientIP = queryDict.__getitem__(CONFIG['clientIP'])
     capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
     #openStream(appname, streamname, ip, True)
 
-    createTree(appname, stream, capacity)
+    createTree(appname, stream, capacity, LOCALIP, clientIP)
 
-    tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
-    return HttpResponse(tmpObj[0].fpid)
+    # tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
+    # return HttpResponse(tmpObj[0].fpid)
+    return HttpResponse('open stream succeeded')
 
 # only allow get request
 # for viewers to call
@@ -149,15 +149,7 @@ def restart(streamObj, newQuality):
     newObject.save()
 
 
-def getCurrentQuality():
-    objArray = videoQuality.objects.filter(sVideo = 'video')
-    if len(objArray) == 0:
-        print 'not none'
-        quality = qualityTuple[0]
-        newObj = videoQuality(sVideo = 'video', sQuality = quality)
-        newObj.save()
-        return quality
-    return objArray[0].sQuality
+
 
 def exitTree(appName, streamName):
     treeName = getTreeName(appname, streamName)
@@ -190,10 +182,6 @@ def openStream(appName, streamName, ip, isRtsp):
 
     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
     streamObject.save()
-
-def getTreeName(appname, streamName):
-    treename = appname + "/" + streamName
-    return treename
 
 def joinTree(appname, streamname):
     treename = getTreeName(appname, streamname)

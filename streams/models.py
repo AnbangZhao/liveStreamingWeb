@@ -9,6 +9,7 @@ class FfmpegStream(models.Model) :
     fRtspSource = models.CharField(max_length = 50)
     fpid = models.CharField(max_length = 10)
     fuserCount = models.CharField(max_length = 10)
+    fposition = models.CharField(max_length = 10)
 
 class videoQuality(models.Model):
     sVideo = models.CharField(max_length = 30, primary_key=True)
