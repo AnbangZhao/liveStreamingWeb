@@ -1,5 +1,6 @@
 from liveStreaming.httpService import *
-import liveStreaming.ffmpeg
+from liveStreaming import ffmpeg
+from streams.models import FfmpegStream
 import os
 
 URI_INITNODE = 'initnode'
@@ -19,7 +20,7 @@ def initNode(capacity, localip):
     return ret
 
 def createTree(appName, streamName, streamCapacity, localip, clientIP):
-    treeName = getTreeName(appname, streamName)
+    treeName = getTreeName(appName, streamName)
     uri = "createtree"
     params = dict()
     params[TREE_NAME] = treeName
