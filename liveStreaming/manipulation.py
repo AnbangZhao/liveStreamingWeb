@@ -81,7 +81,7 @@ def connectStream(appName, streamName, localip):
     # modify internal data structure
     position = 'nonroot'
     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fposition = position)
-
+    streamObject.save()
 
 
 # private methods#

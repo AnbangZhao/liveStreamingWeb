@@ -33,9 +33,6 @@ def startup():
 startup()
 
 def home(request):
-    return HttpResponse('hello world')
-
-def home(request):
     queryDict = request.GET
     appname = queryDict.__getitem__(CONFIG['appname'])
     streamname = queryDict.__getitem__(CONFIG['stream'])
