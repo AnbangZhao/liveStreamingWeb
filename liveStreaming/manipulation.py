@@ -39,7 +39,7 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
 
 def exitTree(appName, streamName, localip):
     #clean data structure in metadata server 
-    treeName = getTreeName(appname, streamName)
+    treeName = getTreeName(appName, streamName)
     uri = "exittree"
     params = dict(treename=treeName)
     params[CLOUDLET_NAME] = localip
