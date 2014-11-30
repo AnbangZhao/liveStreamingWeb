@@ -79,21 +79,11 @@ def open(request):
 @csrf_exempt
 def exit(request):
     queryDict = request.GET
-    username = queryDict.__getitem__(CONFIG['username'])
-    appname = queryDict.__getitem__(CONFIG['appname'])
-    stream = queryDict.__getitem__(CONFIG['stream'])
-    treeName = getTreeName(appname, stream)
-    tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
-    userCount = int(tmpObj[0].fuserCount)
-    pid = int(tmpObj[0].fpid)
-    rtspSource = tmpObj[0].fRtspSource
-    userCount -= 1
-    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
-    newObj.save()
-    if userCount <=0 :
-        exitTree(appname, streamName)
-        os.kill(pid, signal.SIGTERM)
-    return HttpResponse(tmpObj[0].fpid)
+    appName = queryDict.__getitem__(CONFIG['appname'])
+    streamName = queryDict.__getitem__(CONFIG['stream'])
+    exitTree(appName, streamName, LOCALIP)
+
+    return HttpResponse('exittree succeeded')
 
 # only allow get request
 # for viewers to call
@@ -151,37 +141,29 @@ def restart(streamObj, newQuality):
 
 
 
-def exitTree(appName, streamName):
-    treeName = getTreeName(appname, streamName)
-    createTreeUrl = "https://p2p-meta-server.appspot.com/createtree"
-    values = dict(treename=treeName)
-    req = urllib2.Request(createTreeUrl, data)
-    rsp = urllib2.urlopen(req)
-    content = rsp.read()
-    print "content is", content
 
-def openStream(appName, streamName, ip, isRtsp):
-    treeName = getTreeName(appName, streamName)
-    protocol = 'rtmp://'
-    port = ''
-    srcName = '/liveStreaming' + '/' + streamName
-    if isRtsp == True:
-        protocol = 'rtsp'
-        port = ':1234'
-        srcName = ''
-    rtspSource = protocol + ip + port + srcName
-    rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + streamName 
-    currQuality = getCurrentQuality()
-    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv', '-re', '-i',
-    rtspSource, '-s', currQuality, '-vcodec', 'libx264', '-f',
-    'flv', rtmpEnd], shell=False)
-    #pid = 10086  
-    pid = proc.pid
-    print 'pid in openstream ' + str(pid)
-    userCount = 1
+# def openStream(appName, streamName, ip, isRtsp):
+#     treeName = getTreeName(appName, streamName)
+#     protocol = 'rtmp://'
+#     port = ''
+#     srcName = '/liveStreaming' + '/' + streamName
+#     if isRtsp == True:
+#         protocol = 'rtsp'
+#         port = ':1234'
+#         srcName = ''
+#     rtspSource = protocol + ip + port + srcName
+#     rtmpEnd = 'rtmp://127.0.0.1/liveStreaming' + '/' + streamName 
+#     currQuality = getCurrentQuality()
+#     proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv', '-re', '-i',
+#     rtspSource, '-s', currQuality, '-vcodec', 'libx264', '-f',
+#     'flv', rtmpEnd], shell=False)
+#     #pid = 10086  
+#     pid = proc.pid
+#     print 'pid in openstream ' + str(pid)
+#     userCount = 1
 
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
-    streamObject.save()
+#     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
+#     streamObject.save()
 
 def joinTree(appname, streamname):
     treename = getTreeName(appname, streamname)

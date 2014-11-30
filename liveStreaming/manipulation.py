@@ -15,7 +15,6 @@ def initNode(capacity, localip):
     params = dict()
     params[BANDWIDTH_CAPACITY] = capacity
     params[CLOUDLET_NAME] = localip
-    print params
     ret = sendReq(uri, params)
     return ret
 
@@ -26,7 +25,8 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
     params[TREE_NAME] = treeName
     params[STREAM_CAPACITY] = streamCapacity
     params[CLOUDLET_NAME] = localip
-    sendReq(uri, params)
+    retCode = sendReq(uri, params)
+
     #pid = ffmpeg.openRtsp(appName, streamName, clientIP)
     # for now. To be changed to rtsp
     pid = ffmpeg.openRtmp(appName, streamName, clientIP)
@@ -35,6 +35,31 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
     position = 'root'
     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fposition = position)
     streamObject.save()
+
+
+def exitTree(appName, streamName, localip):
+    #clean data structure in metadata server 
+    treeName = getTreeName(appname, streamName)
+    uri = "exittree"
+    params = dict(treename=treeName)
+    params[CLOUDLET_NAME] = localip
+    retCode = sendReq(uri, params)
+    # if return value is 409, means there's new node
+    # don't exit the pipe
+    if retCode == 202:
+        return
+
+    # clean local data
+    ffmpegArray = FfmpegStream.objects.filter(ftreename = treeName)
+    if len(ffmpegArray) == 0:
+        return
+    ffmpegObj = ffmpegArray[0]
+    pid = ffmpegObj.fpid
+    ffmpegObj.delete()
+
+    #close ffmpeg
+    ffmpeg.close(pid)
+
 
 def getIp():
     userHome = os.getenv("HOME")

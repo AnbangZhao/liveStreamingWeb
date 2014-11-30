@@ -6,5 +6,7 @@ def sendReq (uri, params):
     data = urllib.urlencode(params)
     req = urllib2.Request(url, data)
     rsp = urllib2.urlopen(req)
-    content = rsp.read()
-    return content
+    retCode = rsp.getcode()
+    rsp.close()
+    print 'return code', retCode
+    return retCode

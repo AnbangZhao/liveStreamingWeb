@@ -1,5 +1,6 @@
 from liveStreaming import streamMonitor
 import subprocess
+import os
 
 ffmpegPath = '/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg'
 
@@ -19,6 +20,10 @@ def openRtsp(appName, streamName, srcip):
     tgtStream = appName + '/' + streamName
     pid = open(protocol, srcStream, tgtStream, srcip, port)
     return pid
+
+
+def close(pid):
+    os.kill(int(pid), signal.SIGTERM)
 
 def open(protocol, srcStream, tgtStream, srcip, port):
     src = protocol + '://' + srcip + ':' + str(port) + '/' + srcStream
