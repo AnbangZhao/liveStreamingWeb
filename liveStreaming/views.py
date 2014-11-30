@@ -35,24 +35,18 @@ startup()
 def home(request):
     return HttpResponse('hello world')
 
-# def home(request):
-#     queryDict = request.GET
-#     #myip = socket.gethostbyname(socket.gethostname())
-#     myip = '128.2.213.103'
-#     print myip
-#     appname = queryDict.__getitem__(CONFIG['appname'])
-#     streamname = queryDict.__getitem__(CONFIG['stream'])
-#     #return HttpResponse(socket.gethostbyname(socket.gethostname()))
-#     treename = getTreeName(appname, streamname)
-#     streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
-#     if len(streamInfoArray) >= 1:
-#         print "len is bigger than one"	
-#         return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+def home(request):
+    queryDict = request.GET
+    appname = queryDict.__getitem__(CONFIG['appname'])
+    streamname = queryDict.__getitem__(CONFIG['stream'])
+    
+    connectStream(appname, streamname, LOCALIP)
+    return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
 
-#     #ip = joinTree(appname, streamname)
-#     ip = '10.2.11.7'
-#     openStream(appname, streamname, ip, False)
-#     return render(request, 'test.html', {'ip':myip, 'appname':appname, 'streamname':streamname})
+    #ip = joinTree(appname, streamname)
+    ip = '10.2.11.7'
+    openStream(appname, streamname, ip, False)
+    return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
 
 # open ffmpeg connection
 # only allow get request
@@ -164,16 +158,6 @@ def restart(streamObj, newQuality):
 
 #     streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
 #     streamObject.save()
-
-def joinTree(appname, streamname):
-    treename = getTreeName(appname, streamname)
-    createTreeUrl = "https://p2p-meta-server.appspot.com/jointree"
-    values = dict(treename=treename)
-    data = urllib.urlencode(values)
-    req = urllib2.Request(createTreeUrl, data)
-    rsp = urllib2.urlopen(req)
-    content = rsp.read()
-    return content
 
 def getConnNum(appName, streamName):
     queryUrl = "http://127.0.0.1/stat"

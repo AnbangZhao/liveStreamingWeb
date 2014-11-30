@@ -25,7 +25,7 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
     params[TREE_NAME] = treeName
     params[STREAM_CAPACITY] = streamCapacity
     params[CLOUDLET_NAME] = localip
-    retCode = sendReq(uri, params)
+    retTuple = sendReq(uri, params)
 
     #pid = ffmpeg.openRtsp(appName, streamName, clientIP)
     # for now. To be changed to rtsp
@@ -43,7 +43,8 @@ def exitTree(appName, streamName, localip):
     uri = "exittree"
     params = dict(treename=treeName)
     params[CLOUDLET_NAME] = localip
-    retCode = sendReq(uri, params)
+    retTuple = sendReq(uri, params)
+    retCode = retTuple[0]
     # if return value is 409, means there's new node
     # don't exit the pipe
     if retCode == 202:
@@ -59,6 +60,31 @@ def exitTree(appName, streamName, localip):
 
     #close ffmpeg
     ffmpeg.close(pid)
+
+
+def connectStream(appName, streamName, localip):
+    treename = getTreeName(appName, streamName)
+    streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
+    # there is already an ffmpeg pipe
+    if len(streamInfoArray) >= 1:
+        print "stream is already connected"
+        return
+
+    #  add into the stream tree in metadata server
+    ip = joinTree(appName, streamName, localip)
+
+
+
+# private methods#
+
+def joinTree(appName, streamName, localip):
+    treeName = getTreeName(appName, streamName)
+    uri = "jointree"
+    params = dict(treename=treename)
+    params[CLOUDLET_NAME] = localip
+    sendReq(uri, params)
+
+
 
 
 def getIp():
