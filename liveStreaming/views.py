@@ -43,9 +43,6 @@ def home(request):
     connectStream(appname, streamname, LOCALIP)
     return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
 
-    openStream(appname, streamname, ip, False)
-    return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
-
 # open ffmpeg connection
 # only allow get request
 @csrf_exempt

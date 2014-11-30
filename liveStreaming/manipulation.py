@@ -63,15 +63,24 @@ def exitTree(appName, streamName, localip):
 
 
 def connectStream(appName, streamName, localip):
-    treename = getTreeName(appName, streamName)
-    streamInfoArray = FfmpegStream.objects.filter(ftreename = treename)
+    treeName = getTreeName(appName, streamName)
+    streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
     # there is already an ffmpeg pipe
     if len(streamInfoArray) >= 1:
         print "stream is already connected"
         return
 
     #  add into the stream tree in metadata server
-    ip = joinTree(appName, streamName, localip)
+    srcip = joinTree(appName, streamName, localip)
+    if srcip == None:
+        return
+
+    # open ffmpeg pipe
+    pid = ffmpeg.openRtmp(appName, streamName, srcip)
+
+    # modify internal data structure
+    position = 'nonroot'
+    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fposition = position)
 
 
 
@@ -80,11 +89,17 @@ def connectStream(appName, streamName, localip):
 def joinTree(appName, streamName, localip):
     treeName = getTreeName(appName, streamName)
     uri = "jointree"
-    params = dict(treename=treename)
+    params = dict(treename=treeName)
     params[CLOUDLET_NAME] = localip
     retTuple = sendReq(uri, params)
-    print 'content is', retTuple[1]
-    return '1.1.1.1'
+    retCode = retTuple[0]
+    retMessage = retTuple[1]
+    # do nothing
+    if retCode == 202:
+        return None
+
+    streamSrcIp = retMessage
+    return streamSrcIp
 
 
 
