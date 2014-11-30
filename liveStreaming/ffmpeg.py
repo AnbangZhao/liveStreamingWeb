@@ -1,5 +1,6 @@
 from liveStreaming import streamMonitor
 import subprocess
+import signal
 import os
 
 ffmpegPath = '/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg'
