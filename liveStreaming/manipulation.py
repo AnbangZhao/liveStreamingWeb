@@ -82,7 +82,9 @@ def joinTree(appName, streamName, localip):
     uri = "jointree"
     params = dict(treename=treename)
     params[CLOUDLET_NAME] = localip
-    sendReq(uri, params)
+    retTuple = sendReq(uri, params)
+    print 'content is', retTuple[1]
+    return '1.1.1.1'
 
 
 

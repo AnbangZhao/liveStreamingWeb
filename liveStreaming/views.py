@@ -43,8 +43,6 @@ def home(request):
     connectStream(appname, streamname, LOCALIP)
     return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
 
-    #ip = joinTree(appname, streamname)
-    ip = '10.2.11.7'
     openStream(appname, streamname, ip, False)
     return render(request, 'test.html', {'ip':PUBLICIP, 'appname':appname, 'streamname':streamname})
 
