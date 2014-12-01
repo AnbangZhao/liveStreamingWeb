@@ -2,16 +2,13 @@ import xml.etree.ElementTree as ET
 import urllib
 import urllib2
 from config import CONFIG
-from manipulation import getIp
-from manipulation import CLOUDLET_NAME
+import os
 
 
 url = 'http://127.0.0.1:8282/stat'
 reportUrl = 'http://127.0.0.1:8000/noviewer'
 heartbeatUrl = "https://p2p-meta-server.appspot.com/heartbeat"
-
-LOCALIP = ''
-PUBLICIP = ''
+CLOUDLET_NAME = 'cloudletName'
 
 def getStreamConnNum(root, streamName):
     root = root.find('server').find('application').find('live')
@@ -34,6 +31,15 @@ def getOutBandw(root):
 def getTreeName(appname, streamName):
     treename = appname + "/" + streamName
     return treename
+
+def getIp():
+    userHome = os.getenv("HOME")
+    filepath = userHome + '/ip'
+    ipFile = open(filepath, 'r')
+    ipList = []
+    for line in ipFile:
+        ipList.append(line.rstrip())
+    return ipList
 
 def getXmlString():
     req = urllib2.Request(url)
@@ -70,16 +76,16 @@ def reportNoViewer(streamName):
 
 
 
-def heartbeat(streamName):
+def heartbeat(streamName, localip):
     url = heartbeatUrl
     treeName = getTreeName('liveStreaming', streamName)
     params = dict(treename=treeName)
-    params[CLOUDLET_NAME] = LOCALIP
+    params[CLOUDLET_NAME] = localip
     print 'heartbeat params:', params
     sendReq(url, params)
 
 
-def report(infoArray):
+def report(infoArray, localip):
     for tuple in infoArray:
         name = tuple[0]
         bwin = int(tuple[1])
@@ -87,20 +93,17 @@ def report(infoArray):
         if bwin != 0 and bwout == 0:
             reportNoViewer(name)
 
-        heartbeat()
+        heartbeat(name, localip)
 
 if __name__ == "__main__":
     #tree = ET.parse('test.xml')
     #root = tree.getroot()
     ipList = getIp()
-    global LOCALIP
-    global PUBLICIP
-    LOCALIP = ipList[0]
-    PUBLICIP = ipList[1]
+    localip = ipList[0]
     xmlString = getXmlString()
     root = ET.fromstring(xmlString)
     infoArray = getStreamInfo(root)
-    report(infoArray)
+    report(infoArray, localip)
 
     for tuple in infoArray:
         print tuple[0], tuple[1], tuple[2]
