@@ -2,10 +2,16 @@ import xml.etree.ElementTree as ET
 import urllib
 import urllib2
 from config import CONFIG
+from manipulation import getIp
+from manipulation import CLOUDLET_NAME
 
 
 url = 'http://127.0.0.1:8282/stat'
 reportUrl = 'http://127.0.0.1:8000/noviewer'
+heartbeatUrl = "https://p2p-meta-server.appspot.com/heartbeat"
+
+LOCALIP = ''
+PUBLICIP = ''
 
 def getStreamConnNum(root, streamName):
     root = root.find('server').find('application').find('live')
@@ -24,6 +30,10 @@ def getAllConnNum(root):
 def getOutBandw(root):
     node = root.find('bw_out')
     return node.text
+
+def getTreeName(appname, streamName):
+    treename = appname + "/" + streamName
+    return treename
 
 def getXmlString():
     req = urllib2.Request(url)
@@ -56,7 +66,16 @@ def reportNoViewer(streamName):
     params = {}
     params[CONFIG['appname']] = 'liveStreaming'
     params[CONFIG['stream']] = streamName
-    print params
+    sendReq(url, params)
+
+
+
+def heartbeat(streamName):
+    url = heartbeatUrl
+    treeName = getTreeName('liveStreaming', streamName)
+    params = dict(treename=treeName)
+    params[CLOUDLET_NAME] = LOCALIP
+    print 'heartbeat params:', params
     sendReq(url, params)
 
 
@@ -68,9 +87,16 @@ def report(infoArray):
         if bwin != 0 and bwout == 0:
             reportNoViewer(name)
 
+        heartbeat()
+
 if __name__ == "__main__":
     #tree = ET.parse('test.xml')
     #root = tree.getroot()
+    ipList = getIp()
+    global LOCALIP
+    global PUBLICIP
+    LOCALIP = ipList[0]
+    PUBLICIP = ipList[1]
     xmlString = getXmlString()
     root = ET.fromstring(xmlString)
     infoArray = getStreamInfo(root)
