@@ -14,5 +14,7 @@ urlpatterns = patterns('',
     #exit streaming
     url(r'^exitstream$', 'liveStreaming.views.exit'),
     #degrade all stream resolutions
-    url(r'^degrade$', 'liveStreaming.views.degrade')
+    url(r'^degrade$', 'liveStreaming.views.degrade'),
+    #deal with no viewer situation
+    url(r'^noviewer$', 'liveStreaming.views.noviewer')
 )

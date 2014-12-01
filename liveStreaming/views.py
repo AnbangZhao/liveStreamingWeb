@@ -106,6 +106,12 @@ def degrade(request):
         restart(streamObj, newQuality)
     return HttpResponse(newQuality)
 
+def noviewer(request):
+    appname = queryDict.__getitem__(CONFIG['appname'])
+    streamName = queryDict.__getitem__(CONFIG['stream'])
+    treeName = getTreeName(appname, stream, LOCALIP)
+
+
 def restart(streamObj, newQuality):
     treeName = streamObj.ftreename
     pid = streamObj.fpid
