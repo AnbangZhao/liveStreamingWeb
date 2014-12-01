@@ -2,6 +2,7 @@ from liveStreaming.httpService import *
 from liveStreaming import ffmpeg
 from streams.models import FfmpegStream
 import os
+import time
 
 URI_INITNODE = 'initnode'
 
@@ -33,7 +34,8 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
 
     userCount = 1
     position = 'root'
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fposition = position)
+    currTime = time.time()
+    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fposition = position, ftime = currTime)
     streamObject.save()
 
 
@@ -65,9 +67,12 @@ def exitTree(appName, streamName, localip):
 def connectStream(appName, streamName, localip):
     treeName = getTreeName(appName, streamName)
     streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
+    currTime = time.time()
     # there is already an ffmpeg pipe
     if len(streamInfoArray) >= 1:
         print "stream is already connected"
+        streamObj = streamInfoArray[0]
+        streamObj.update(ftime = currTime)
         return
 
     #  add into the stream tree in metadata server
@@ -80,7 +85,7 @@ def connectStream(appName, streamName, localip):
 
     # modify internal data structure
     position = 'nonroot'
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fposition = position)
+    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fposition = position, ftime = currTime)
     streamObject.save()
 
 
@@ -100,8 +105,6 @@ def joinTree(appName, streamName, localip):
 
     streamSrcIp = retMessage
     return streamSrcIp
-
-
 
 
 def getIp():
