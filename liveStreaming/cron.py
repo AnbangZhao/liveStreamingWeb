@@ -56,6 +56,7 @@ def reportNoViewer(streamName):
     params = {}
     params[CONFIG['appname']] = 'liveStreaming'
     params[CONFIG['stream']] = streamName
+    print params
     sendReq(url, params)
 
 
