@@ -10,6 +10,7 @@ BANDWIDTH_CAPACITY = "capacity"
 CLOUDLET_NAME = 'cloudletName'
 TREE_NAME = 'treename'
 STREAM_CAPACITY = 'consume'
+MAX_DURATION = 15
 
 def initNode(capacity, localip):
     uri = URI_INITNODE
@@ -89,6 +90,25 @@ def connectStream(appName, streamName, localip):
     streamObject.save()
 
 
+def dealNoViewer(appName, streamName, localip):
+    treeName = getTreeName(appName, streamName)
+    streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
+    # if no such stream in db, do nothing
+    if len(streamInfoArray) == 0:
+        return
+    streamObj = streamInfoArray[0]
+    # if it's a new stream, do nothing
+    # if this node is root, do nothing
+    if isNewStream(streamObj) == True or isRoot(streamObj):
+        print 'it\'s new stream'
+        return
+    # otherwise, this is a non-root node with no viewers. Safely exit it
+    else:
+        exitTree(appName, streamName, localip)
+
+
+
+
 # private methods#
 
 def joinTree(appName, streamName, localip):
@@ -105,6 +125,19 @@ def joinTree(appName, streamName, localip):
 
     streamSrcIp = retMessage
     return streamSrcIp
+
+
+def isNewStream(streamObj):
+    arrivalTime = float(streamObj.ftime)
+    currTime = time.time()
+    duration = currTime - arrivalTime
+    print 'time duration:', duration
+    return duration < MAX_DURATION
+
+
+def isRoot(streamObj):
+    position = streamObj.fposition
+    return position == 'root'
 
 
 def getIp():
