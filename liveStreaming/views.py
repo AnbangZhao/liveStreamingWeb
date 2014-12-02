@@ -122,7 +122,8 @@ def error(request):
     appName = queryDict.__getitem__(CONFIG['appname'])
     streamName = queryDict.__getitem__(CONFIG['stream'])
     rootStatus = queryDict.__getitem__(CONFIG['rootStatus'])
-    dealError()
+    dealError(appName, streamName, rootStatus, LOCALIP)
+    return HttpResponse('success')
 
 def restart(streamObj, newQuality):
     treeName = streamObj.ftreename
