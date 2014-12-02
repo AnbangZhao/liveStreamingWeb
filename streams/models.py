@@ -6,7 +6,7 @@ class publisher(models.Model) :
 
 class FfmpegStream(models.Model) :
     ftreename = models.CharField(max_length = 50, primary_key=True)
-    fRtspSource = models.CharField(max_length = 50)
+    srcip = models.CharField(max_length = 20)
     fpid = models.CharField(max_length = 10)
     fuserCount = models.CharField(max_length = 10)
     fposition = models.CharField(max_length = 10)

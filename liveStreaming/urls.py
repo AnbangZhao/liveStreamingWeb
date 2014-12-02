@@ -18,5 +18,7 @@ urlpatterns = patterns('',
     #deal with no viewer situation
     url(r'^noviewer$', 'liveStreaming.views.noviewer'),
     #deal with errors
-    url(r'^error$', 'liveStreaming.views.error')
+    url(r'^error$', 'liveStreaming.views.error'),
+    #check if the stream exists
+    url(r'^check$', 'liveStreaming.views.check'),
 )

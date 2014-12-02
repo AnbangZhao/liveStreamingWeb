@@ -73,22 +73,22 @@ def exit(request):
 
 # only allow get request
 # for viewers to call
-@csrf_exempt
-def stop(request):
-    queryDict = request.GET
-    username = queryDict.__getitem__(CONFIG['username'])
-    appname = queryDict.__getitem__(CONFIG['appname'])
-    stream = queryDict.__getitem__(CONFIG['stream'])
-    treeName = getTreeName(appname, stream)
-    tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
-    userCount = int(tmpObj[0].fuserCount)
-    pid = int(tmpObj[0].fpid)
-    rtspSource = tmpObj[0].fRtspSource
-    userCount -= 1
-    newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
-    newObj.save()
-    exitTree(appname, streamName)
-    os.kill(pid, signal.SIGTERM)
+# @csrf_exempt
+# def stop(request):
+#     queryDict = request.GET
+#     username = queryDict.__getitem__(CONFIG['username'])
+#     appname = queryDict.__getitem__(CONFIG['appname'])
+#     stream = queryDict.__getitem__(CONFIG['stream'])
+#     treeName = getTreeName(appname, stream)
+#     tmpObj = FfmpegStream.objects.filter(ftreename = treeName)
+#     userCount = int(tmpObj[0].fuserCount)
+#     pid = int(tmpObj[0].fpid)
+#     rtspSource = tmpObj[0].fRtspSource
+#     userCount -= 1
+#     newObj = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
+#     newObj.save()
+#     exitTree(appname, streamName)
+#     os.kill(pid, signal.SIGTERM)
 
 def degrade(request):
     currQuality = getCurrentQuality()
@@ -125,23 +125,32 @@ def error(request):
     dealError(appName, streamName, rootStatus, LOCALIP)
     return HttpResponse('success')
 
-def restart(streamObj, newQuality):
-    treeName = streamObj.ftreename
-    pid = streamObj.fpid
-    rtspSource = streamObj.fRtspSource
-    userCount = streamObj.fuserCount
-    rtmpEnd = 'rtmp://127.0.0.1/' + treeName
-    print 'restart pid: ' + pid
-    print 'restart quality: ' + newQuality
-    os.kill(int(pid), signal.SIGTERM)
-    sleep(2)
-    proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv','-i', 
-    rtspSource, '-s', newQuality, '-map', '0:0','-vcodec', 'libx264','-f',
-    'flv', rtmpEnd], shell=False)
-    pid = proc.pid
-    print "pid", pid
-    newObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
-    newObject.save()
+
+#as long as this node is waiting for the stream, status is up
+@csrf_exempt
+def check(request):
+    queryDict = request.POST
+    treeName = queryDict.__getitem__('treename')
+    streamStatus = checkStream(treeName)
+    return HttpResponse(streamStatus)
+
+# def restart(streamObj, newQuality):
+#     treeName = streamObj.ftreename
+#     pid = streamObj.fpid
+#     rtspSource = streamObj.fRtspSource
+#     userCount = streamObj.fuserCount
+#     rtmpEnd = 'rtmp://127.0.0.1/' + treeName
+#     print 'restart pid: ' + pid
+#     print 'restart quality: ' + newQuality
+#     os.kill(int(pid), signal.SIGTERM)
+#     sleep(2)
+#     proc = subprocess.Popen(['/home/ubuntu/ffmpeg-git-20141123-64bit-static/ffmpeg', '-f', 'live_flv','-i', 
+#     rtspSource, '-s', newQuality, '-map', '0:0','-vcodec', 'libx264','-f',
+#     'flv', rtmpEnd], shell=False)
+#     pid = proc.pid
+#     print "pid", pid
+#     newObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fRtspSource = rtspSource)
+#     newObject.save()
 
 
 

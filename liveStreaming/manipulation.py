@@ -36,7 +36,7 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
     userCount = 1
     position = 'root'
     currTime = time.time()
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fuserCount = userCount, fposition = position, ftime = currTime)
+    streamObject = FfmpegStream(ftreename = treeName, fsrcip = clientIP, fpid = pid, fuserCount = userCount, fposition = position, ftime = currTime)
     streamObject.save()
 
 
@@ -89,7 +89,7 @@ def connectStream(appName, streamName, localip):
 
     # modify internal data structure
     position = 'nonroot'
-    streamObject = FfmpegStream(ftreename = treeName, fpid = pid, fposition = position, ftime = currTime)
+    streamObject = FfmpegStream(ftreename = treeName, fsrcip = srcip, fpid = pid, fposition = position, ftime = currTime)
     streamObject.save()
 
 
@@ -108,6 +108,13 @@ def dealNoViewer(appName, streamName, localip):
     # otherwise, this is a non-root node with no viewers. Safely exit it
     else:
         exitTree(appName, streamName, localip)
+
+def checkStream(treeName):
+    streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
+    if len(streamInfoArray) == 0:
+        return 'up'
+    else:
+        return 'down'
 
 
 def dealError(appName, streamName, rootStatus, localip):
@@ -135,10 +142,43 @@ def dealError(appName, streamName, rootStatus, localip):
         #check connectivity with the previous node
         else:
             prevIP = getPrevIP(streamObj)
+            prevStatus = getStreamStatus(prevIP, treeName)
             #if the prev node has good stream, do nothing
-            #if the prev node does not have good stream
-            #re-schedule
+            if prevStatus == 'up':
+                return
+            #if the prev node does not have a good stream or waiting
+            #reconnect
+            else:
+                reConnectStream(appName, streamName, streamObj, localip)
+
+
 # private methods#
+
+def reConnectStream(appName, streamName, streamObj, localip):
+    #reschedule in metadata server and get a new ip address
+    newSrcip = joinTree(appName, streamName, localip)
+    #close the old pipe
+    oldPid = streamObj.fpid
+    ffmpeg.close(oldPid)
+    #open a new rtmp pipe (this node is guaranteed not to be root)
+    newPid = ffmpeg.openRtmp(appName, streamName, newSrcip)
+    #update local data structure
+    #srcip pid ftime
+    currTime = time.time()
+    streamObj.update(fsrcip = newSrcip)
+    streamObj.update(fpid = newPid)
+    streamObj.update(ftime = currTime)
+
+def getStreamStatus(ip, treeName):
+    url = "http://" + ip + "/check"
+    params = dict(treename=treeName)
+    data = urllib.urlencode(params)
+    req = urllib2.Request(url, data)
+    rsp = urllib2.urlopen(req)
+    retCode = rsp.getcode()
+    content = rsp.read()
+    rsp.close()
+    return content
 
 def joinTree(appName, streamName, localip):
     treeName = getTreeName(appName, streamName)
@@ -183,9 +223,6 @@ def getTreeName(appname, streamName):
     return treename
 
 def getPrevIP(streamObj):
-    src = streamObj.fRtspSource
-    startIdx = string.find(src, '//')
-    endIdx = string.find(src, '//', startIdx + 1)
-    ip = src[startIdx, endIdx + 1]
-    print 'ip', ip
+    src = streamObj.fsrcip
+    print 'prev ip', ip
     return ip
