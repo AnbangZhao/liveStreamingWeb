@@ -16,7 +16,7 @@ from liveStreaming.httpService import sendReq
 from time import sleep
 
 
-CLOUDLET_DEFAULT_CAPACITY = 1000
+CLOUDLET_DEFAULT_CAPACITY = 500
 LOCALIP = ''
 PUBLICIP = ''
 
