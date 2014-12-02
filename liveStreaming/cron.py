@@ -87,7 +87,7 @@ def heartbeat(streamName, localip):
 
 
 def getRootStatus(streamName):
-    url = heartbeatUrl
+    url = rootStatusUrl 
     treeName = getTreeName('liveStreaming', streamName)
     params = dict(treename=treeName)   
     retTuple = sendReq(url, params)

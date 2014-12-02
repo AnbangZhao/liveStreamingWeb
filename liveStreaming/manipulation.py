@@ -10,7 +10,7 @@ BANDWIDTH_CAPACITY = "capacity"
 CLOUDLET_NAME = 'cloudletName'
 TREE_NAME = 'treename'
 STREAM_CAPACITY = 'consume'
-MAX_DURATION = 15
+MAX_DURATION = 25
 
 def initNode(capacity, localip):
     uri = URI_INITNODE
@@ -48,20 +48,23 @@ def exitTree(appName, streamName, localip):
     params[CLOUDLET_NAME] = localip
     retTuple = sendReq(uri, params)
     retCode = retTuple[0]
-    # if return value is 409, means there's new node
+    # if return value is 202, means there's new node
     # don't exit the pipe
     if retCode == 202:
+        print 'retCode is 202'
         return
 
     # clean local data
     ffmpegArray = FfmpegStream.objects.filter(ftreename = treeName)
     if len(ffmpegArray) == 0:
+        print 'ffmpegArray length is 0'
         return
     ffmpegObj = ffmpegArray[0]
     pid = ffmpegObj.fpid
     ffmpegObj.delete()
 
     #close ffmpeg
+    print 'deleting the ffmpeg with pid', pid
     ffmpeg.close(pid)
 
 
@@ -100,7 +103,7 @@ def dealNoViewer(appName, streamName, localip):
     # if it's a new stream, do nothing
     # if this node is root, do nothing
     if isNewStream(streamObj) == True or isRoot(streamObj):
-        print 'it\'s new stream'
+        print 'it\'s new stream or root'
         return
     # otherwise, this is a non-root node with no viewers. Safely exit it
     else:

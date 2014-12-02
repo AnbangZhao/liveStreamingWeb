@@ -25,6 +25,9 @@ def openRtsp(appName, streamName, srcip):
 
 def close(pid):
     os.kill(int(pid), signal.SIGTERM)
+    #os.kill(int(pid), signal.SIGKILL)
+    #command = "sudo kill -9 " + str(pid)
+    #subprocess.call(command, shell=True)
 
 def open(protocol, srcStream, tgtStream, srcip, port):
     src = protocol + '://' + srcip + ':' + str(port) + '/' + srcStream
