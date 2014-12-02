@@ -6,4 +6,5 @@ CONFIG = {
     'stream' : 'stream',
     'clientIP' : 'clientIP',
     'streamCapacity' : 'streamCapacity'
+    'rootStatus' : 'rootStatus'
 }

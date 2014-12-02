@@ -115,6 +115,15 @@ def noviewer(request):
     dealNoViewer(appName, streamName, LOCALIP)
     return HttpResponse('success')
 
+
+@csrf_exempt
+def error(request):
+    queryDict = request.POST
+    appName = queryDict.__getitem__(CONFIG['appname'])
+    streamName = queryDict.__getitem__(CONFIG['stream'])
+    rootStatus = queryDict.__getitem__(CONFIG['rootStatus'])
+    dealError()
+
 def restart(streamObj, newQuality):
     treeName = streamObj.ftreename
     pid = streamObj.fpid

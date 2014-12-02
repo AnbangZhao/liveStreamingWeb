@@ -7,7 +7,9 @@ import os
 
 url = 'http://127.0.0.1:8282/stat'
 reportUrl = 'http://127.0.0.1:8000/noviewer'
+reportErrorUrl = 'http://127.0.0.1:8000/error'
 heartbeatUrl = "https://p2p-meta-server.appspot.com/heartbeat"
+rootStatusUrl = "https://p2p-meta-server.appspot.com/rootstatus"
 CLOUDLET_NAME = 'cloudletName'
 
 def getStreamConnNum(root, streamName):
@@ -75,7 +77,6 @@ def reportNoViewer(streamName):
     sendReq(url, params)
 
 
-
 def heartbeat(streamName, localip):
     url = heartbeatUrl
     treeName = getTreeName('liveStreaming', streamName)
@@ -85,15 +86,39 @@ def heartbeat(streamName, localip):
     sendReq(url, params)
 
 
+def getRootStatus(streamName):
+    url = heartbeatUrl
+    treeName = getTreeName('liveStreaming', streamName)
+    params = dict(treename=treeName)   
+    retTuple = sendReq(url, params)
+    return retTuple[1]
+
+
+def reportError(streamName):
+    status = getRootStatus(streamName)
+    print 'root status', status
+    url = reportErrorUrl
+    params = {}
+    params[CONFIG['appname']] = 'liveStreaming'
+    params[CONFIG['stream']] = streamName
+    params[CONFIG['rootStatus']] = status
+    sendReq(url, params)
+    # if this node is root and is not a new node. exit
+    # if this node is not root, check if root is good
+    # if root is good, reschedule
+    # if root is not good, exit
+
 def report(infoArray, localip):
     for tuple in infoArray:
         name = tuple[0]
         bwin = int(tuple[1])
         bwout = int(tuple[2])
-        if bwin != 0 and bwout == 0:
+        if bwin == 0:
+            reportError(name)
+        elif bwout == 0:
             reportNoViewer(name)
-
-        heartbeat(name, localip)
+        if bwin != 0:
+            heartbeat(name, localip)
 
 if __name__ == "__main__":
     #tree = ET.parse('test.xml')

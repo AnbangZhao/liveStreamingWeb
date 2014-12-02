@@ -107,8 +107,34 @@ def dealNoViewer(appName, streamName, localip):
         exitTree(appName, streamName, localip)
 
 
+def dealError(appName, streamName, rootStatus, localip):
+    treeName = getTreeName(appName, streamName)
+    streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
+    # if no such stream in db, do nothing
+    if len(streamInfoArray) == 0:
+        return
+    streamObj = streamInfoArray[0]
+    # if it's a new stream, do nothing and return
+    if isNewStream(streamObj):
+        print 'new stream error'
+        return
 
-
+    #if it's an old root, exit it
+    if isRoot(streamObj):
+        print 'old root error. exit'
+        exitTree(appName, streamName, localip)
+    else:
+        #if this is a non-root and the root of the 
+        #stream is down. exit it
+        if rootStatus == 'down':
+            exitTree(appName, streamName, localip)
+        #if this is a non-root and the root is good
+        #check connectivity with the previous node
+        else:
+            prevIP = getPrevIP(streamObj)
+            #if the prev node has good stream, do nothing
+            #if the prev node does not have good stream
+            #re-schedule
 # private methods#
 
 def joinTree(appName, streamName, localip):
@@ -152,3 +178,11 @@ def getIp():
 def getTreeName(appname, streamName):
     treename = appname + "/" + streamName
     return treename
+
+def getPrevIP(streamObj):
+    src = streamObj.fRtspSource
+    startIdx = string.find(src, '//')
+    endIdx = string.find(src, '//', startIdx + 1)
+    ip = src[startIdx, endIdx + 1]
+    print 'ip', ip
+    return ip
