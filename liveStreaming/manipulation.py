@@ -111,7 +111,7 @@ def dealNoViewer(appName, streamName, localip):
 
 def checkStream(treeName):
     streamInfoArray = FfmpegStream.objects.filter(ftreename = treeName)
-    if len(streamInfoArray) == 0:
+    if len(streamInfoArray) > 0:
         return 'up'
     else:
         return 'down'
