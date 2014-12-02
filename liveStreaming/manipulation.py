@@ -143,6 +143,7 @@ def dealError(appName, streamName, rootStatus, localip):
         else:
             prevIP = getPrevIP(streamObj)
             prevStatus = getStreamStatus(prevIP, treeName)
+            print 'prevStatus is', prevStatus
             #if the prev node has good stream, do nothing
             if prevStatus == 'up':
                 return
@@ -170,8 +171,10 @@ def reConnectStream(appName, streamName, streamObj, localip):
     streamObj.update(ftime = currTime)
 
 def getStreamStatus(ip, treeName):
-    url = "http://" + ip + "/check"
+    url = "http://" + ip + ":8000/check"
     params = dict(treename=treeName)
+    print 'url', url
+    print 'params', params
     data = urllib.urlencode(params)
     req = urllib2.Request(url, data)
     rsp = urllib2.urlopen(req)
@@ -223,6 +226,6 @@ def getTreeName(appname, streamName):
     return treename
 
 def getPrevIP(streamObj):
-    src = streamObj.fsrcip
-    print 'prev ip', ip
-    return ip
+    srcip = streamObj.fsrcip
+    print 'prev ip', srcip
+    return srcip
