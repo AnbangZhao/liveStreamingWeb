@@ -162,6 +162,8 @@ def reConnectStream(appName, streamName, streamObj, localip):
     #close the old pipe
     oldPid = streamObj.fpid
     ffmpeg.close(oldPid)
+    #avoid issued by process change
+    sleep(1)
     #open a new rtmp pipe (this node is guaranteed not to be root)
     newPid = ffmpeg.openRtmp(appName, streamName, newSrcip)
     #update local data structure
