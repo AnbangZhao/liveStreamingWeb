@@ -118,7 +118,7 @@ def noviewer(request):
 
 @csrf_exempt
 def error(request):
-    queryDict = request.POST
+    queryDict = request.GET
     appName = queryDict.__getitem__(CONFIG['appname'])
     streamName = queryDict.__getitem__(CONFIG['stream'])
     rootStatus = queryDict.__getitem__(CONFIG['rootStatus'])
