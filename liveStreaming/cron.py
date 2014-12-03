@@ -3,6 +3,7 @@ import urllib
 import urllib2
 from config import CONFIG
 import os
+from time import sleep
 
 
 url = 'http://127.0.0.1:8282/stat'
@@ -11,6 +12,7 @@ reportErrorUrl = 'http://127.0.0.1:8000/error'
 heartbeatUrl = "https://p2p-meta-server.appspot.com/heartbeat"
 rootStatusUrl = "https://p2p-meta-server.appspot.com/rootstatus"
 CLOUDLET_NAME = 'cloudletName'
+INTERVAL = 15
 
 def getStreamConnNum(root, streamName):
     root = root.find('server').find('application').find('live')
@@ -123,12 +125,15 @@ def report(infoArray, localip):
 if __name__ == "__main__":
     #tree = ET.parse('test.xml')
     #root = tree.getroot()
-    ipList = getIp()
-    localip = ipList[0]
-    xmlString = getXmlString()
-    root = ET.fromstring(xmlString)
-    infoArray = getStreamInfo(root)
-    report(infoArray, localip)
+    while True:
+        ipList = getIp()
+        localip = ipList[0]
+        xmlString = getXmlString()
+        root = ET.fromstring(xmlString)
+        infoArray = getStreamInfo(root)
+        report(infoArray, localip)
 
-    for tuple in infoArray:
-        print tuple[0], tuple[1], tuple[2]
+        for tuple in infoArray:
+            print tuple[0], tuple[1], tuple[2]
+
+        sleep(INTERVAL)
