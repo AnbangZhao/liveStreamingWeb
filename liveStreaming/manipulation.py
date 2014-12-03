@@ -76,7 +76,8 @@ def connectStream(appName, streamName, localip):
     if len(streamInfoArray) >= 1:
         print "stream is already connected"
         streamObj = streamInfoArray[0]
-        streamObj.update(ftime = currTime)
+        streamObj.ftime = currTime
+        streamObj.save()
         return
 
     #  add into the stream tree in metadata server
@@ -166,9 +167,10 @@ def reConnectStream(appName, streamName, streamObj, localip):
     #update local data structure
     #srcip pid ftime
     currTime = time.time()
-    streamObj.update(fsrcip = newSrcip)
-    streamObj.update(fpid = newPid)
-    streamObj.update(ftime = currTime)
+    streamObj.fsrcip = newSrcip
+    streamObj.fpid = newPid
+    streamObj.ftime = currTime
+    streamObj.save()
 
 def getStreamStatus(ip, treeName):
     url = "http://" + ip + ":8000/check"
