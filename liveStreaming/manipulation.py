@@ -32,7 +32,7 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
 
     #pid = ffmpeg.openRtsp(appName, streamName, clientIP)
     # for now. To be changed to rtsp
-    pid = ffmpeg.openRtmp(appName, streamName, clientIP)
+    pid = ffmpeg.openRtsp(appName, streamName, clientIP)
 
     userCount = 1
     position = 'root'

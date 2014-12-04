@@ -52,6 +52,8 @@ def open(request):
     stream = queryDict.__getitem__(CONFIG['stream'])
     clientIP = queryDict.__getitem__(CONFIG['clientIP'])
     capacity = queryDict.__getitem__(CONFIG['streamCapacity'])
+    print 'streamname', stream
+    print 'clientIP', clientIP
     #openStream(appname, streamname, ip, True)
 
     createTree(appname, stream, capacity, LOCALIP, clientIP)
