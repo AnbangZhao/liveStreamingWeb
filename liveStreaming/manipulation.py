@@ -28,6 +28,10 @@ def createTree(appName, streamName, streamCapacity, localip, clientIP):
     params[TREE_NAME] = treeName
     params[STREAM_CAPACITY] = streamCapacity
     params[CLOUDLET_NAME] = localip
+
+    streamArray = FfmpegStream(ftreename = treeName)
+    if len(streamArray) > 0:
+        return
     retTuple = sendReq(uri, params)
 
     #pid = ffmpeg.openRtsp(appName, streamName, clientIP)
