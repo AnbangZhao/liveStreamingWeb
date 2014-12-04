@@ -24,7 +24,7 @@ def openRtsp(appName, streamName, srcip):
     end = 'rtmp://127.0.0.1/' + tgtStream
     currQuality = streamMonitor.getCurrentQuality()
     command = [ffmpegPath, '-i',
-    src, '-s', currQuality, '-vcodec', 'libx264', '-f',
+    src, '-vcodec', 'libx264','-f',
     'flv', end]
     print command
     proc = subprocess.Popen(command, shell=False)
