@@ -15,11 +15,20 @@ def openRtmp(appName, streamName, srcip):
 
 
 def openRtsp(appName, streamName, srcip):
-    protocol = 'rtsp'
-    port = 1234
-    srcStream = ''
+    #protocol = 'rtsp'
+    #port = 1234
+    #srcStream = ''
     tgtStream = appName + '/' + streamName
-    pid = open(protocol, srcStream, tgtStream, srcip, port)
+    #pid = open(protocol, srcStream, tgtStream, srcip, port)
+    src = 'rtsp://' + srcip + ':1234'
+    end = 'rtmp://127.0.0.1/' + tgtStream
+    currQuality = streamMonitor.getCurrentQuality()
+    command = [ffmpegPath, '-i',
+    src, '-s', currQuality, '-vcodec', 'libx264', '-f',
+    'flv', end]
+    print command
+    proc = subprocess.Popen(command, shell=False)
+    pid = proc.pid
     return pid
 
 
